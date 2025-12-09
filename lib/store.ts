@@ -7,10 +7,11 @@ interface AppState {
   // Current case
   currentCase: CaseData | null;
   currentStep: WorkflowStep;
-  
+  isViewingLoadedCase: boolean;
+
   // Saved cases
   savedCases: CaseData[];
-  
+
   // Actions
   createNewCase: () => void;
   updateCase: (updates: Partial<CaseData>) => void;
@@ -19,7 +20,7 @@ interface AppState {
   loadAllCases: () => Promise<void>;
   deleteCase: (caseId: string) => Promise<void>;
   syncCurrentCaseToDatabase: () => Promise<void>;
-  
+
   // Workflow navigation
   setStep: (step: WorkflowStep) => void;
   nextStep: () => void;
@@ -59,11 +60,12 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       currentCase: null,
       currentStep: 'clinical-note',
+      isViewingLoadedCase: false,
       savedCases: [],
-      
+
       createNewCase: () => {
         const newCase = createEmptyCase();
-        set({ currentCase: newCase, currentStep: 'clinical-note' });
+        set({ currentCase: newCase, currentStep: 'clinical-note', isViewingLoadedCase: false });
       },
       
       updateCase: (updates) => {
@@ -105,7 +107,7 @@ export const useAppStore = create<AppState>()(
         try {
           const caseData = await caseService.getCaseById(caseId);
           if (caseData) {
-            set({ currentCase: caseData, currentStep: 'claim-summary' });
+            set({ currentCase: caseData, currentStep: 'claim-summary', isViewingLoadedCase: true });
           }
         } catch (error) {
           console.error('Failed to load case:', error);

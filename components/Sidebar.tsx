@@ -5,7 +5,7 @@ import { Trash, Sun, User, ExternalLink, LogOut, FileText, RefreshCw, UserPlus }
 import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
-  const { savedCases, loadCase, deleteCase, currentCase, loadAllCases, setStep } = useAppStore();
+  const { savedCases, loadCase, deleteCase, currentCase, loadAllCases, setStep, isViewingLoadedCase } = useAppStore();
   const [showCases, setShowCases] = useState(false);
 
   useEffect(() => {
@@ -101,8 +101,8 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Case Action Buttons - Only show when a completed case is selected */}
-      {currentCase && currentCase.status === 'completed' && (
+      {/* Case Action Buttons - Only show when a saved case is loaded and completed */}
+      {isViewingLoadedCase && currentCase && currentCase.status === 'completed' && (
         <div className="px-4 pb-4 space-y-2 border-t border-gray-200 pt-4">
           <button
             onClick={handleOngoingManagement}
