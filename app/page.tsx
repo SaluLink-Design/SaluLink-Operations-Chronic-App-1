@@ -11,11 +11,12 @@ import TreatmentDocumentation from '@/components/workflow/TreatmentDocumentation
 import MedicationSelection from '@/components/workflow/MedicationSelection';
 import ClaimSummary from '@/components/workflow/ClaimSummary';
 import OngoingManagement from '@/components/workflow/OngoingManagement';
+import FollowUpVisitForm from '@/components/workflow/FollowUpVisitForm';
 import ReferralForm from '@/components/workflow/ReferralForm';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
-  const { currentCase, currentStep, createNewCase, loadAllCases } = useAppStore();
+  const { currentCase, currentStep, createNewCase, loadAllCases, isViewingLoadedCase, setStep } = useAppStore();
 
   useEffect(() => {
     loadAllCases();
@@ -44,6 +45,14 @@ export default function Home() {
       case 'claim-summary':
         return <ClaimSummary />;
       case 'ongoing-management':
+        if (isViewingLoadedCase && currentCase?.status === 'completed') {
+          return (
+            <FollowUpVisitForm
+              onBack={() => setStep('claim-summary')}
+              onComplete={() => setStep('claim-summary')}
+            />
+          );
+        }
         return <OngoingManagement />;
       case 'referral':
         return <ReferralForm />;

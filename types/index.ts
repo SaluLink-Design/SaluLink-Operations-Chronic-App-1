@@ -45,6 +45,34 @@ export interface SelectedTreatment extends TreatmentItem {
   };
 }
 
+export interface FollowUpVisit {
+  id: string;
+  caseId: string;
+  visitDate: Date;
+  status: 'draft' | 'completed';
+  treatments: FollowUpTreatment[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FollowUpTreatment {
+  id?: string;
+  description: string;
+  code: string;
+  timesPerformed: number;
+  documentation: {
+    notes: string;
+    images: FollowUpImage[];
+  };
+}
+
+export interface FollowUpImage {
+  id?: string;
+  imageUrl: string;
+  imageName: string;
+  uploadedAt?: Date;
+}
+
 export interface SelectedMedication extends Medication {
   registrationNote: string;
 }
