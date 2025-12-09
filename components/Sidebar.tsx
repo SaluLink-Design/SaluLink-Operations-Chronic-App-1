@@ -2,11 +2,15 @@
 
 import { useAppStore } from '@/lib/store';
 import { Trash, Sun, User, ExternalLink, LogOut, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
-  const { savedCases, loadCase, deleteCase, currentCase } = useAppStore();
+  const { savedCases, loadCase, deleteCase, currentCase, loadAllCases } = useAppStore();
   const [showCases, setShowCases] = useState(false);
+
+  useEffect(() => {
+    loadAllCases();
+  }, []);
 
   return (
     <div className="w-[282px] h-screen bg-gradient-to-b from-gray-100 to-gray-50 border-r border-gray-200 flex flex-col">
@@ -43,7 +47,9 @@ export default function Sidebar() {
                       ? 'bg-primary-50 border-primary-300'
                       : 'bg-white border-gray-200 hover:border-gray-300'
                   }`}
-                  onClick={() => loadCase(caseItem.id)}
+                  onClick={async () => {
+                    await loadCase(caseItem.id);
+                  }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -53,12 +59,26 @@ export default function Sidebar() {
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(caseItem.updatedAt).toLocaleDateString()}
                       </p>
+                      {caseItem.status && (
+                        <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${
+                          caseItem.status === 'completed'
+                            ? 'bg-green-100 text-green-800'
+                            : caseItem.status === 'medication'
+                            ? 'bg-blue-100 text-blue-800'
+                            : caseItem.status === 'diagnostic'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {caseItem.status}
+                        </span>
+                      )}
                     </div>
                     <button
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         if (confirm('Delete this case?')) {
-                          deleteCase(caseItem.id);
+                          await deleteCase(caseItem.id);
+                          await loadAllCases();
                         }
                       }}
                       className="ml-2 p-1 text-gray-400 hover:text-red-600 transition-colors"
