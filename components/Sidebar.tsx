@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Trash, Sun, User, ArrowSquareOut, LogOut, FileText } from 'lucide-react';
+import { Trash, Sun, User, ExternalLink, LogOut, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Sidebar() {
@@ -88,7 +88,7 @@ export default function Sidebar() {
           <span>My account</span>
         </button>
         <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-3">
-          <ArrowSquareOut size={18} />
+          <ExternalLink size={18} />
           <span>Updates & FAQ</span>
         </button>
         <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-3">
