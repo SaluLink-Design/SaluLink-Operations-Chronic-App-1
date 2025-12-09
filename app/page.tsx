@@ -10,6 +10,8 @@ import DiagnosticBasket from '@/components/workflow/DiagnosticBasket';
 import TreatmentDocumentation from '@/components/workflow/TreatmentDocumentation';
 import MedicationSelection from '@/components/workflow/MedicationSelection';
 import ClaimSummary from '@/components/workflow/ClaimSummary';
+import OngoingManagement from '@/components/workflow/OngoingManagement';
+import ReferralForm from '@/components/workflow/ReferralForm';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
@@ -41,6 +43,10 @@ export default function Home() {
         return <MedicationSelection />;
       case 'claim-summary':
         return <ClaimSummary />;
+      case 'ongoing-management':
+        return <OngoingManagement />;
+      case 'referral':
+        return <ReferralForm />;
       default:
         return <ClinicalNoteInput />;
     }

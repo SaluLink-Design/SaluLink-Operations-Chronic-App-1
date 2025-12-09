@@ -1,16 +1,24 @@
 'use client';
 
 import { useAppStore } from '@/lib/store';
-import { Trash, Sun, User, ExternalLink, LogOut, FileText } from 'lucide-react';
+import { Trash, Sun, User, ExternalLink, LogOut, FileText, RefreshCw, UserPlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
-  const { savedCases, loadCase, deleteCase, currentCase, loadAllCases } = useAppStore();
+  const { savedCases, loadCase, deleteCase, currentCase, loadAllCases, setStep } = useAppStore();
   const [showCases, setShowCases] = useState(false);
 
   useEffect(() => {
     loadAllCases();
   }, []);
+
+  const handleOngoingManagement = () => {
+    setStep('ongoing-management');
+  };
+
+  const handleCreateReferral = () => {
+    setStep('referral');
+  };
 
   return (
     <div className="w-[282px] h-screen bg-gradient-to-b from-gray-100 to-gray-50 border-r border-gray-200 flex flex-col">
@@ -90,6 +98,26 @@ export default function Sidebar() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Case Action Buttons - Only show when a completed case is selected */}
+      {currentCase && currentCase.status === 'completed' && (
+        <div className="px-4 pb-4 space-y-2 border-t border-gray-200 pt-4">
+          <button
+            onClick={handleOngoingManagement}
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <RefreshCw size={18} />
+            <span>Ongoing Management</span>
+          </button>
+          <button
+            onClick={handleCreateReferral}
+            className="w-full px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <UserPlus size={18} />
+            <span>Create Referral</span>
+          </button>
         </div>
       )}
 

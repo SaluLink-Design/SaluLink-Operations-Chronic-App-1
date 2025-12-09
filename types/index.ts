@@ -87,7 +87,7 @@ export interface ReferralData {
 }
 
 // Workflow Steps
-export type WorkflowStep = 
+export type WorkflowStep =
   | 'clinical-note'
   | 'analyze-note'
   | 'confirm-condition'
@@ -97,5 +97,6 @@ export type WorkflowStep =
   | 'select-medication'
   | 'medication-note'
   | 'claim-summary'
-  | 'ongoing-management';
+  | 'ongoing-management'
+  | 'referral';
 
