@@ -4,9 +4,13 @@ import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { authiService } from '@/lib/services/authiService';
 import { SelectedTreatment } from '@/types';
-import { Plus, Minus, Save } from 'lucide-react';
+import { Plus, Minus, Save, ArrowLeft } from 'lucide-react';
 
-export default function OngoingManagement() {
+interface OngoingManagementProps {
+  onBack?: () => void;
+}
+
+export default function OngoingManagement({ onBack }: OngoingManagementProps) {
   const { currentCase, addOngoingTreatment, saveCase } = useAppStore();
   const condition = currentCase?.confirmedCondition;
   const treatmentBasket = condition ? authiService.getTreatmentBasket(condition) : null;
@@ -55,13 +59,12 @@ export default function OngoingManagement() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedTreatments.size === 0) {
       alert('Please select at least one ongoing management treatment');
       return;
     }
 
-    // Add selected treatments to the case
     treatmentBasket?.ongoingManagementBasket.forEach((item) => {
       const timesPerformed = selectedTreatments.get(item.code);
       if (timesPerformed) {
@@ -75,13 +78,26 @@ export default function OngoingManagement() {
       }
     });
 
-    saveCase();
+    await saveCase();
     alert('Ongoing management saved successfully!');
+
+    if (onBack) {
+      onBack();
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span>Back to Claim Summary</span>
+          </button>
+        )}
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Ongoing Management</h1>
         <p className="text-gray-600">
           Document follow-up treatments for <strong>{condition}</strong>

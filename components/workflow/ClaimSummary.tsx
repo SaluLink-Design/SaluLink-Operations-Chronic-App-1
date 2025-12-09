@@ -1,19 +1,29 @@
 'use client';
 
+import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
 import { authiService } from '@/lib/services/authiService';
-import { Download, Save, FileText } from 'lucide-react';
+import { Download, Save, FileText, RefreshCw, UserPlus } from 'lucide-react';
+import OngoingManagement from './OngoingManagement';
 
 export default function ClaimSummary() {
   const { currentCase, saveCase, updateCase } = useAppStore();
+  const [showOngoingManagement, setShowOngoingManagement] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
+  const [referralReason, setReferralReason] = useState('');
+  const [referralNotes, setReferralNotes] = useState('');
 
   if (!currentCase) {
     return <div>No case data available</div>;
   }
 
-  const handleSave = () => {
+  if (showOngoingManagement) {
+    return <OngoingManagement onBack={() => setShowOngoingManagement(false)} />;
+  }
+
+  const handleSave = async () => {
     updateCase({ status: 'completed' });
-    saveCase();
+    await saveCase();
     alert('Case saved successfully!');
   };
 
@@ -124,22 +134,94 @@ export default function ClaimSummary() {
       </div>
 
       {/* Actions */}
-      <div className="mt-8 flex gap-4">
-        <button
-          onClick={handleSave}
-          className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <Save size={20} />
-          <span>Save Case</span>
-        </button>
-        <button
-          onClick={handleExport}
-          className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <Download size={20} />
-          <span>Export as PDF</span>
-        </button>
+      <div className="mt-8 space-y-4">
+        <div className="flex gap-4">
+          <button
+            onClick={handleSave}
+            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Save size={20} />
+            <span>Save Case</span>
+          </button>
+          <button
+            onClick={handleExport}
+            className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Download size={20} />
+            <span>Export as PDF</span>
+          </button>
+        </div>
+
+        {currentCase.status === 'completed' && (
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowOngoingManagement(true)}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={20} />
+              <span>Ongoing Management</span>
+            </button>
+            <button
+              onClick={() => setShowReferral(!showReferral)}
+              className="flex-1 px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <UserPlus size={20} />
+              <span>Create Referral</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      {showReferral && (
+        <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Referral</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reason for Referral
+              </label>
+              <input
+                type="text"
+                value={referralReason}
+                onChange={(e) => setReferralReason(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Enter reason for referral"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Additional Notes
+              </label>
+              <textarea
+                value={referralNotes}
+                onChange={(e) => setReferralNotes(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                rows={4}
+                placeholder="Enter any additional notes or supporting information"
+              />
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  alert('Referral created successfully!');
+                  setShowReferral(false);
+                  setReferralReason('');
+                  setReferralNotes('');
+                }}
+                className="flex-1 px-6 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
+              >
+                Save Referral
+              </button>
+              <button
+                onClick={() => setShowReferral(false)}
+                className="flex-1 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

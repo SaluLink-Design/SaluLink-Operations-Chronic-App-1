@@ -13,14 +13,15 @@ import ClaimSummary from '@/components/workflow/ClaimSummary';
 import { Plus } from 'lucide-react';
 
 export default function Home() {
-  const { currentCase, currentStep, createNewCase } = useAppStore();
+  const { currentCase, currentStep, createNewCase, loadAllCases } = useAppStore();
 
   useEffect(() => {
-    // Initialize with a new case if none exists
+    loadAllCases();
+
     if (!currentCase) {
       createNewCase();
     }
-  }, [currentCase, createNewCase]);
+  }, []);
 
   const renderWorkflowStep = () => {
     switch (currentStep) {

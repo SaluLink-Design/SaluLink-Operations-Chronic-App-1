@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CaseData, WorkflowStep, ConditionMatch, ICDCode, SelectedTreatment, SelectedMedication, MedicalPlan } from '@/types';
+import { caseService } from './supabase/caseService';
 
 interface AppState {
   // Current case
@@ -13,9 +14,11 @@ interface AppState {
   // Actions
   createNewCase: () => void;
   updateCase: (updates: Partial<CaseData>) => void;
-  saveCase: () => void;
-  loadCase: (caseId: string) => void;
-  deleteCase: (caseId: string) => void;
+  saveCase: () => Promise<void>;
+  loadCase: (caseId: string) => Promise<void>;
+  loadAllCases: () => Promise<void>;
+  deleteCase: (caseId: string) => Promise<void>;
+  syncCurrentCaseToDatabase: () => Promise<void>;
   
   // Workflow navigation
   setStep: (step: WorkflowStep) => void;
@@ -76,32 +79,72 @@ export const useAppStore = create<AppState>()(
         });
       },
       
-      saveCase: () => {
+      saveCase: async () => {
         const { currentCase, savedCases } = get();
         if (!currentCase) return;
-        
-        const existingIndex = savedCases.findIndex(c => c.id === currentCase.id);
-        
-        if (existingIndex >= 0) {
-          const updated = [...savedCases];
-          updated[existingIndex] = { ...currentCase, updatedAt: new Date() };
-          set({ savedCases: updated });
-        } else {
-          set({ savedCases: [...savedCases, { ...currentCase, updatedAt: new Date() }] });
+
+        try {
+          await caseService.updateCase(currentCase.id, currentCase);
+
+          const existingIndex = savedCases.findIndex(c => c.id === currentCase.id);
+          const updatedCase = { ...currentCase, updatedAt: new Date() };
+
+          if (existingIndex >= 0) {
+            const updated = [...savedCases];
+            updated[existingIndex] = updatedCase;
+            set({ savedCases: updated });
+          } else {
+            set({ savedCases: [...savedCases, updatedCase] });
+          }
+        } catch (error) {
+          console.error('Failed to save case:', error);
         }
       },
       
-      loadCase: (caseId) => {
-        const { savedCases } = get();
-        const caseToLoad = savedCases.find(c => c.id === caseId);
-        if (caseToLoad) {
-          set({ currentCase: caseToLoad, currentStep: 'claim-summary' });
+      loadCase: async (caseId) => {
+        try {
+          const caseData = await caseService.getCaseById(caseId);
+          if (caseData) {
+            set({ currentCase: caseData, currentStep: 'claim-summary' });
+          }
+        } catch (error) {
+          console.error('Failed to load case:', error);
+        }
+      },
+
+      loadAllCases: async () => {
+        try {
+          const cases = await caseService.getAllCases();
+          set({ savedCases: cases });
+        } catch (error) {
+          console.error('Failed to load cases:', error);
         }
       },
       
-      deleteCase: (caseId) => {
-        const { savedCases } = get();
-        set({ savedCases: savedCases.filter(c => c.id !== caseId) });
+      deleteCase: async (caseId) => {
+        try {
+          await caseService.deleteCase(caseId);
+          const { savedCases } = get();
+          set({ savedCases: savedCases.filter(c => c.id !== caseId) });
+        } catch (error) {
+          console.error('Failed to delete case:', error);
+        }
+      },
+
+      syncCurrentCaseToDatabase: async () => {
+        const { currentCase } = get();
+        if (!currentCase) return;
+
+        try {
+          if (currentCase.id.startsWith('case-')) {
+            const newCase = await caseService.createCase(currentCase);
+            set({ currentCase: newCase });
+          } else {
+            await caseService.updateCase(currentCase.id, currentCase);
+          }
+        } catch (error) {
+          console.error('Failed to sync case to database:', error);
+        }
       },
       
       setStep: (step) => set({ currentStep: step }),
