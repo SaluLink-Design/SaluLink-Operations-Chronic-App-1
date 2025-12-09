@@ -17,9 +17,14 @@ export default function ClaimSummary() {
   }
 
   const handleSave = async () => {
-    updateCase({ status: 'completed' });
-    await saveCase();
-    alert('Case saved successfully!');
+    try {
+      updateCase({ status: 'completed' });
+      await saveCase();
+      alert('Case saved successfully!');
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Failed to save case. Please check your connection and try again.');
+    }
   };
 
   const handleExport = () => {

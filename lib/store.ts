@@ -86,10 +86,30 @@ export const useAppStore = create<AppState>()(
         if (!currentCase) return;
 
         try {
-          await caseService.updateCase(currentCase.id, currentCase);
+          let savedCase: CaseData;
 
-          const existingIndex = savedCases.findIndex(c => c.id === currentCase.id);
-          const updatedCase = { ...currentCase, updatedAt: new Date() };
+          if (currentCase.id.startsWith('case-')) {
+            savedCase = await caseService.createCase(currentCase);
+
+            for (const treatment of currentCase.diagnosticTreatments) {
+              await caseService.addTreatment(savedCase.id, treatment, 'diagnostic');
+            }
+
+            for (const treatment of currentCase.ongoingTreatments) {
+              await caseService.addTreatment(savedCase.id, treatment, 'ongoing_management');
+            }
+
+            for (const medication of currentCase.selectedMedications) {
+              await caseService.addMedication(savedCase.id, medication);
+            }
+
+            set({ currentCase: savedCase });
+          } else {
+            savedCase = await caseService.updateCase(currentCase.id, currentCase);
+          }
+
+          const existingIndex = savedCases.findIndex(c => c.id === savedCase.id);
+          const updatedCase = { ...savedCase, updatedAt: new Date() };
 
           if (existingIndex >= 0) {
             const updated = [...savedCases];
@@ -100,6 +120,7 @@ export const useAppStore = create<AppState>()(
           }
         } catch (error) {
           console.error('Failed to save case:', error);
+          throw error;
         }
       },
       
